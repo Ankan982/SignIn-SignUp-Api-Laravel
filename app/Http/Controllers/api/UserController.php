@@ -128,6 +128,20 @@ class UserController extends BaseController
         }
     }
 
+    public function details()
+    {
+        $user_details = $this->userService->findAll();
+        $response = [
+            'status' => 200,
+            'message' => 'All User details',
+            'data' => $user_details,
+            'errors' => [],
+            'meta' => new \stdClass(),
+            'info' => new \stdClass(),
+
+        ];
+        return response()->json($response, $response['status']);
+    }
 
     
 }
