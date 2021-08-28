@@ -1,16 +1,17 @@
 <?php
 
-namespace App\Http\Controllers\api;
-
+namespace App\Http\Controllers\API\V1;
 
 use App\Http\Controllers\Controller;
 use App\Services\UserService;
-use App\Http\Controllers\API\BaseController as BaseController;
+use App\Http\Requests\ValidUser;
+use App\Http\Requests\ValidLoginUser;
+use Carbon\Carbon;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
-class UserController extends BaseController
+class UserController extends Controller
 {
     protected  $userService;
 
@@ -20,36 +21,32 @@ class UserController extends BaseController
         $this->userService = $userService;
     }
 
-    public function register(Request $request)
+    public function register(ValidUser $request)
     {
-        $request->validate([
-            'name' => 'required',
-            'email' => 'email |required',
-            'password' => 'required'
-        ]);
-
+       
         $input = $request->all();
         $input['password'] = bcrypt($input['password']);
+        $input['password_confirmation'] = bcrypt($input['password_confirmation']);
+        $input['dob']= Carbon::createFromFormat('d/m/Y',$input['dob'])->format('d-m-Y');
 
+        
         try {
 
             $user = $this->userService->create($input);
-            //dd($isSuccess);
             $accessToken = $user->createToken($input['email'])->accessToken;
             $user->access_token = $accessToken;
 
             $response = [
                 'status' => 200,
-                'message' => 'User is created successfully.',
+                'message' => 'User has been created successfully.',
                 'data' => $user,
                 'errors' => [],
                 'meta' => new \stdClass(),
                 'info' => new \stdClass(),
 
             ];
-
-
             return response()->json($response, $response['status']);
+
         } catch (Exception $e) {
 
             $response = [
@@ -70,15 +67,9 @@ class UserController extends BaseController
         }
     }
 
-    public function login(Request $request)
+    public function login(ValidLoginUser $request)
     {
-        $request->validate([
-            'email' => 'email|required',
-            'password' => 'required'
-        ]);
-
        
-    
         try {
 
             $data = $request->all();
@@ -130,6 +121,7 @@ class UserController extends BaseController
 
     public function details()
     {
+        
         $user_details = $this->userService->findAll();
         $response = [
             'status' => 200,

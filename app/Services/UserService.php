@@ -50,6 +50,11 @@ class UserService
         $user = $this->user->where('email',$email);
         return $user->update(['password'=>$password]);
     }
+     /**
+     * Create User password
+     * @return object
+     */
+   
     public function create($attributes)
     {
         $attributes = Arr::except($attributes, ['_token', '_method']);
