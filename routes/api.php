@@ -3,6 +3,7 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\API\V1\UserController;
+use App\Http\Controllers\API\V1\ProductController;
 
 /*
 |--------------------------------------------------------------------------
@@ -22,4 +23,11 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 Route::post('/register', [UserController::class, 'register']);
 Route::post('/login',    [UserController::class, 'login']);
 
-Route::middleware('auth:api')->get('/user-details',    [UserController::class, 'details']);
+//Route::middleware('auth:api')->
+
+Route::middleware(['auth:api'])->group(function () {
+
+    Route::get('/user-details',    [UserController::class, 'details']);
+    Route::get('/products',        [ProductController::class, 'index']);
+    Route::get('/logout',          [UserController::class, 'logout']);
+});

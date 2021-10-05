@@ -8,6 +8,8 @@ use App\Http\Requests\ValidUser;
 use App\Http\Requests\ValidLoginUser;
 use Carbon\Carbon;
 use Exception;
+use Laravel\Passport\RefreshToken;
+use Laravel\Passport\Token;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -23,13 +25,13 @@ class UserController extends Controller
 
     public function register(ValidUser $request)
     {
-       
+
         $input = $request->all();
         $input['password'] = bcrypt($input['password']);
         $input['password_confirmation'] = bcrypt($input['password_confirmation']);
-        $input['dob']= Carbon::createFromFormat('d/m/Y',$input['dob'])->format('d-m-Y');
+        $input['dob'] = Carbon::createFromFormat('d/m/Y', $input['dob'])->format('d-m-Y');
 
-        
+
         try {
 
             $user = $this->userService->create($input);
@@ -46,7 +48,6 @@ class UserController extends Controller
 
             ];
             return response()->json($response, $response['status']);
-
         } catch (Exception $e) {
 
             $response = [
@@ -69,12 +70,12 @@ class UserController extends Controller
 
     public function login(ValidLoginUser $request)
     {
-       
+
         try {
 
             $data = $request->all();
 
-            if (Auth::attempt(['email' => $data['email'],  'password' => $data['password'] ])) {
+            if (Auth::attempt(['email' => $data['email'],  'password' => $data['password']])) {
                 $user = Auth()->user();
                 $accessToken = $user->createToken($data['email'])->accessToken;
                 $user->access_token = $accessToken;
@@ -121,7 +122,7 @@ class UserController extends Controller
 
     public function details()
     {
-        
+
         $user_details = $this->userService->findAll();
         $response = [
             'status' => 200,
@@ -135,5 +136,20 @@ class UserController extends Controller
         return response()->json($response, $response['status']);
     }
 
-    
+    public function logout()
+    {
+        $user = Auth::user()->token();
+        $user->revoke();
+        $message= 'Logged Out';
+        $response = [
+            'status' => 200,
+            'message' => 'User has been logged out successfully.',
+            'data' => $message,
+            'errors' => [],
+            'meta' => new \stdClass(),
+            'info' => new \stdClass(),
+
+        ];
+        return response()->json($response, $response['status']);
+    }
 }
